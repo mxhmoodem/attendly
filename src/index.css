@@ -1,0 +1,12 @@
+@import './styles/variables.css';
+@import './styles/globals.css';
+@import './styles/utilities.css';
+
+/* Set color scheme */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
