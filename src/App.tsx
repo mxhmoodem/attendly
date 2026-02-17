@@ -4,15 +4,15 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthProvider.tsx';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Leave from './pages/leave/Leave';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import Leave from './pages/Leave/Leave';
 import OfficeTracker from './pages/office/OfficeTracker';
-import Profile from './pages/profile/Profile';
-import { ROUTES } from './constants/routes';
+import Profile from './pages/Profile/Profile';
+import { ROUTES } from './constants/routes.ts';
 import './App.css';
 
 function App() {
