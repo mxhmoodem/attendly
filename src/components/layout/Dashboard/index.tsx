@@ -1,15 +1,14 @@
 import { Outlet } from 'react-router-dom';
+import { Header } from '../Header';
+import { Navbar } from '../Navbar';
+import './Dashboard.css';
 
 const DashboardLayout = () => {
   return (
     <div className="dashboard-layout">
-      <header>
-        <h1>Attendly Dashboard</h1>
-      </header>
-      <nav>
-        {/* TODO: Add navigation */}
-      </nav>
-      <main>
+      <Header />
+      <Navbar />
+      <main className="dashboard-main">
         <Outlet />
       </main>
     </div>

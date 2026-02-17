@@ -5,10 +5,9 @@ import {
   Navigate,
 } from 'react-router-dom';
 import { AuthProvider } from './context/AuthProvider.tsx';
-import { ProtectedRoute } from './components/layout/ProtectedRoute';
-import DashboardLayout from './components/layout/DashboardLayout';
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
+import { ProtectedRoute, PublicRoute } from './components/layout/ProtectedRoute';
+import DashboardLayout from './components/layout/Dashboard/index.tsx';
+import AuthPage from './pages/Auth/AuthPage';
 import Leave from './pages/Leave/Leave';
 import OfficeTracker from './pages/office/OfficeTracker';
 import Profile from './pages/Profile/Profile';
@@ -20,14 +19,28 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
-          <Route path={ROUTES.LOGIN} element={<Login />} />
-          <Route path={ROUTES.REGISTER} element={<Register />} />
+          {/* Public Routes - redirect to dashboard if already logged in */}
+          <Route 
+            path={ROUTES.LOGIN} 
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path={ROUTES.REGISTER} 
+            element={
+              <PublicRoute>
+                <AuthPage />
+              </PublicRoute>
+            } 
+          />
 
-          {/* Root redirect to dashboard */}
+          {/* Root redirect to leave */}
           <Route
             path={ROUTES.ROOT}
-            element={<Navigate to={ROUTES.DASHBOARD} replace />}
+            element={<Navigate to={ROUTES.LEAVE} replace />}
           />
 
           {/* Protected Routes */}
@@ -41,7 +54,7 @@ function App() {
           >
             <Route
               index
-              element={<Navigate to={ROUTES.DASHBOARD} replace />}
+              element={<Navigate to={ROUTES.LEAVE} replace />}
             />
             <Route path="leave" element={<Leave />} />
             <Route path="office-tracker" element={<OfficeTracker />} />
