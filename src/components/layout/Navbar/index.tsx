@@ -6,12 +6,6 @@ export const Navbar = () => {
   return (
     <nav className="app-navbar">
       <NavLink 
-        to={ROUTES.DASHBOARD} 
-        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-      >
-        Dashboard
-      </NavLink>
-      <NavLink 
         to={ROUTES.LEAVE} 
         className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
       >
