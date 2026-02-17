@@ -4,7 +4,7 @@ export const ROUTES = {
   REGISTER: '/register',
   APP_ROOT: '/app',
   DASHBOARD: '/app/dashboard',
-  LEAVE_REQUESTS: '/app/leave-requests',
+  LEAVE: '/app/leave',
   OFFICE_TRACKER: '/app/office-tracker',
   PROFILE: '/app/profile',
 } as const;
