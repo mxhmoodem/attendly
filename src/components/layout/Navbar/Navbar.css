@@ -1,0 +1,30 @@
+.app-navbar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nav-link {
+  color: #6b7280;
+  text-decoration: none;
+  padding: 1rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.nav-link:hover {
+  color: #1f2937;
+  background: #f9fafb;
+}
+
+.nav-link.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
