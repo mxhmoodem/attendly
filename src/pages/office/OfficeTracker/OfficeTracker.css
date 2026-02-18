@@ -1,0 +1,800 @@
+﻿/* ─── CSS custom properties ─────────────────────── */
+.ot-page {
+  --ot-primary:      #6b9080;
+  --ot-primary-dark: #4f7268;
+  --ot-primary-100:  #f0f5f3;
+  --ot-primary-200:  #c2d6cf;
+  --ot-success: #16a34a;
+  --ot-warning: #d97706;
+  --ot-danger:  #dc2626;
+  --ot-text:       #111827;
+  --ot-text-muted: #6b7280;
+  --ot-border:     #e5e7eb;
+  --ot-bg:         #f3f7f5;
+  --ot-card-bg:    #ffffff;
+  --ot-radius:     16px;
+  --ot-shadow:     0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  --ot-bottom-bar: 70px;
+  --ot-navbar:     60px;
+
+  background: var(--ot-bg);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: calc(var(--ot-bottom-bar) + var(--ot-navbar) + 16px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ot-text);
+}
+
+/* ─── Sticky summary header ─────────────────────── */
+.ot-sticky-header {
+  position: sticky;
+  top: 68px;
+  z-index: 90;
+  background: var(--ot-card-bg);
+  border-bottom: 1px solid var(--ot-border);
+  box-shadow: 0 2px 8px rgba(107, 144, 128, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 40px;
+  margin: -2rem -2rem 0;
+}
+
+.ot-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ot-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ot-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ot-header-month {
+  font-size: 0.78rem;
+  color: var(--ot-primary);
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Status badge ───────────────────────────────── */
+.ot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 100px;
+}
+
+.ot-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ot-badge--green { background: #dcfce7; color: #15803d; }
+.ot-badge--green .ot-badge-dot { background: #15803d; }
+.ot-badge--amber { background: #fef3c7; color: #b45309; }
+.ot-badge--amber .ot-badge-dot { background: #b45309; }
+.ot-badge--red   { background: #fee2e2; color: #b91c1c; }
+.ot-badge--red .ot-badge-dot   { background: #b91c1c; }
+
+/* ─── Progress ring ──────────────────────────────── */
+.ot-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.ot-ring-svg-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+
+.ot-ring-svg-wrap svg {
+  width: 76px;
+  height: 76px;
+}
+
+.ot-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ot-ring-pct {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.ot-ring-days {
+  font-size: 0.62rem;
+  color: var(--ot-text-muted);
+  white-space: nowrap;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ─── Scrollable content ─────────────────────────── */
+.ot-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 20px;
+  background: #f9fafb;
+}
+
+/* ─── Generic card ───────────────────────────────── */
+.ot-card {
+  background: var(--ot-card-bg);
+  border-radius: var(--ot-radius);
+  padding: 16px;
+  box-shadow: var(--ot-shadow);
+}
+
+.ot-card-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ot-primary);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ─── Requirement card ───────────────────────────── */
+.ot-req-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ot-req-big {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ot-primary);
+}
+
+.ot-req-muted {
+  font-size: 0.875rem;
+  color: var(--ot-text-muted);
+}
+
+.ot-req-equiv {
+  font-size: 0.8rem;
+  color: var(--ot-text-muted);
+  margin-top: 8px;
+}
+
+/* Slider */
+.ot-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--ot-primary) 0%,
+    var(--ot-primary) var(--val, 60%),
+    var(--ot-border) var(--val, 60%),
+    var(--ot-border) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.ot-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ot-primary);
+  box-shadow: 0 1px 4px rgba(107, 144, 128, 0.5);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.ot-slider::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+}
+
+.ot-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ot-primary);
+  border: none;
+  box-shadow: 0 1px 4px rgba(107, 144, 128, 0.5);
+  cursor: pointer;
+}
+
+/* ─── Calendar card ───────────────────────────────── */
+.ot-cal-card {
+  padding: 16px 12px 12px;
+}
+
+.ot-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.ot-cal-month-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ot-text);
+}
+
+.ot-cal-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.ot-cal-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ot-primary-100);
+  color: var(--ot-primary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.ot-cal-nav-btn:active {
+  background: var(--ot-primary-200);
+}
+
+/* 7-column grid */
+.ot-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.ot-cal-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ot-text-muted);
+  padding: 4px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Calendar day cells ──────────────────────────── */
+.ot-cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: background 0.12s, transform 0.1s;
+}
+
+.ot-cal-cell--empty  { cursor: default; }
+.ot-cal-cell--no-tap { cursor: default; }
+
+.ot-cal-cell:not(.ot-cal-cell--empty):not(.ot-cal-cell--no-tap):active {
+  transform: scale(0.88);
+}
+
+.ot-cal-day-num {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Office day – filled teal circle */
+.ot-cal-cell--office {
+  background: var(--ot-primary);
+  border-radius: 50%;
+}
+.ot-cal-cell--office .ot-cal-day-num {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Home day */
+.ot-cal-cell--home { background: transparent; }
+.ot-cal-cell--home .ot-cal-day-num { color: var(--ot-text); }
+.ot-cal-cell--home:active { background: var(--ot-primary-100); }
+
+/* Excluded day */
+.ot-cal-cell--excluded { background: #f3f4f6; }
+.ot-cal-cell--excluded .ot-cal-day-num {
+  color: #9ca3af;
+  text-decoration: line-through;
+  text-decoration-color: #9ca3af;
+}
+
+/* Weekend */
+.ot-cal-cell--weekend { background: transparent; }
+.ot-cal-cell--weekend .ot-cal-day-num { color: #d1d5db; }
+
+/* Holiday */
+.ot-cal-cell--holiday {
+  background: #fef3c7;
+  border-radius: 50%;
+}
+.ot-cal-cell--holiday .ot-cal-day-num {
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Outside range */
+.ot-cal-cell--outside-range {
+  opacity: 0.2;
+  cursor: default;
+}
+
+/* Today ring */
+.ot-cal-cell--today:not(.ot-cal-cell--office):not(.ot-cal-cell--holiday) {
+  border: 2px solid var(--ot-primary);
+  border-radius: 50%;
+}
+.ot-cal-cell--today.ot-cal-cell--office {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ot-primary);
+}
+
+/* ─── Legend ──────────────────────────────────────── */
+.ot-cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ot-border);
+  justify-content: center;
+}
+
+.ot-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: var(--ot-text-muted);
+  font-weight: 500;
+}
+
+.ot-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ot-legend-swatch--office   { background: var(--ot-primary); }
+.ot-legend-swatch--home     { background: transparent; border: 1.5px solid #d1d5db; }
+.ot-legend-swatch--excluded { background: #e5e7eb; }
+.ot-legend-swatch--holiday  { background: #fbbf24; }
+.ot-legend-swatch--weekend  { background: #f3f4f6; border: 1.5px solid #e5e7eb; }
+
+.ot-cal-hint {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+/* ─── Collapsible card ────────────────────────────── */
+.ot-card--collapsible {
+  padding: 0;
+  overflow: hidden;
+}
+
+.ot-collapse-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  gap: 12px;
+}
+
+.ot-collapse-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.ot-collapse-icon {
+  font-size: 1.3rem;
+  color: var(--ot-primary);
+  flex-shrink: 0;
+}
+
+.ot-collapse-title {
+  font-size: 0.925rem;
+  font-weight: 600;
+  color: var(--ot-text);
+  margin: 0 0 2px;
+}
+
+.ot-collapse-sub {
+  font-size: 0.75rem;
+  color: var(--ot-text-muted);
+  margin: 0;
+}
+
+.ot-collapse-arrow {
+  font-size: 1.3rem;
+  color: var(--ot-text-muted);
+  transition: transform 0.22s;
+  flex-shrink: 0;
+}
+
+.ot-collapse-arrow--open {
+  transform: rotate(90deg);
+}
+
+.ot-collapse-body {
+  border-top: 1px solid var(--ot-border);
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ─── Exclusion sections ──────────────────────────── */
+.ot-excl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ot-excl-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ot-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0;
+}
+
+/* Toggle */
+.ot-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: var(--ot-text);
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.ot-toggle {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: #d1d5db;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ot-toggle--on { background: var(--ot-primary); }
+
+.ot-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+
+.ot-toggle--on .ot-toggle-thumb { transform: translateX(18px); }
+
+/* Exclusion type selector */
+.ot-excl-type-seg {
+  display: flex;
+  gap: 8px;
+}
+
+.ot-excl-type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--ot-border);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ot-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.ot-excl-type-btn--active.ot-excl-type-btn--excl {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #b91c1c;
+}
+
+.ot-excl-type-btn--active.ot-excl-type-btn--hol {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #92400e;
+}
+
+/* Add exclusion row */
+.ot-add-excl-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ot-date-input {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1.5px solid var(--ot-border);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: var(--ot-text);
+  background: var(--ot-card-bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.ot-date-input:focus { border-color: var(--ot-primary); }
+
+.ot-date-input--inline { padding: 8px 10px; }
+
+.ot-add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ot-primary);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.ot-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ot-add-btn:not(:disabled):active { background: var(--ot-primary-dark); }
+
+/* Exclusion list */
+.ot-excl-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ot-excl-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ot-primary-100);
+  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--ot-primary-200);
+}
+
+.ot-excl-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ot-excl-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.03em;
+}
+
+.ot-excl-type-badge--excluded { background: #fee2e2; color: #b91c1c; }
+.ot-excl-type-badge--holiday  { background: #fef3c7; color: #92400e; }
+
+.ot-excl-date {
+  font-size: 0.875rem;
+  color: var(--ot-text);
+  font-weight: 500;
+}
+
+.ot-excl-remove {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.ot-excl-remove:hover { color: var(--ot-danger); }
+
+/* ─── Calculation breakdown ───────────────────────── */
+.ot-breakdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ot-breakdown-icon {
+  font-size: 1.1rem;
+  color: var(--ot-primary);
+}
+
+.ot-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ot-breakdown-table td {
+  padding: 7px 4px;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.ot-breakdown-table td:first-child { color: var(--ot-text); }
+
+.ot-bd-val {
+  text-align: right;
+  font-weight: 600;
+  color: var(--ot-text);
+}
+
+.ot-bd-val--primary { color: var(--ot-primary); }
+
+.ot-bd-excl td {
+  color: var(--ot-text-muted) !important;
+  font-size: 0.8rem !important;
+}
+
+.ot-bd-sep { border-top: 1px dashed var(--ot-border); }
+.ot-bd-sep td { padding-top: 10px; color: var(--ot-text-muted); }
+
+.ot-bd-working {
+  border-top: 1.5px solid var(--ot-border);
+  border-bottom: 1.5px solid var(--ot-border);
+}
+
+.ot-bd-required td { color: var(--ot-primary); }
+
+/* ─── Bottom action bar ───────────────────────────── */
+.ot-bottom-bar {
+  position: fixed;
+  bottom: var(--ot-navbar, 60px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid var(--ot-border);
+  box-shadow: 0 -4px 16px rgba(107, 144, 128, 0.1);
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  gap: 10px;
+  height: var(--ot-bottom-bar, 70px);
+  z-index: 80;
+}
+
+.ot-btn-secondary {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--ot-border);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ot-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.ot-btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ot-btn-secondary--marked {
+  border-color: var(--ot-primary);
+  color: var(--ot-primary);
+  background: var(--ot-primary-100);
+}
+
+.ot-btn-primary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--ot-primary);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.ot-btn-primary:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+/* ─── Responsive tweaks ───────────────────────────── */
+@media (min-width: 480px) {
+  .ot-sticky-header { padding: 14px 20px 16px; }
+  .ot-card { padding: 20px; }
+  .ot-cal-card { padding: 20px 16px 16px; }
+  .ot-cal-day-num { font-size: 0.95rem; }
+  .ot-bottom-bar { padding: 10px 20px; }
+}
+
+@media (min-width: 768px) {
+  .ot-sticky-header {
+    border-radius: var(--ot-radius) var(--ot-radius) 0 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .ot-cal-grid { gap: 4px; }
+  .ot-bottom-bar {
+    max-width: 600px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px 16px 0 0;
+    padding: 10px 24px;
+  }
+}
