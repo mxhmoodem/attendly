@@ -8,6 +8,7 @@ import { AuthProvider } from './context/AuthProvider.tsx';
 import { ProtectedRoute, PublicRoute } from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/Dashboard/index.tsx';
 import AuthPage from './pages/Auth/AuthPage';
+import { Home } from './pages/Home/Home';
 import Leave from './pages/Leave/Leave';
 import OfficeTracker from './pages/office/OfficeTracker';
 import Profile from './pages/Profile/Profile';
@@ -37,10 +38,10 @@ function App() {
             } 
           />
 
-          {/* Root redirect to leave */}
+          {/* Root redirect to app */}
           <Route
             path={ROUTES.ROOT}
-            element={<Navigate to={ROUTES.LEAVE} replace />}
+            element={<Navigate to={ROUTES.APP_ROOT} replace />}
           />
 
           {/* Protected Routes */}
@@ -52,10 +53,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route
-              index
-              element={<Navigate to={ROUTES.LEAVE} replace />}
-            />
+            <Route index element={<Home />} />
             <Route path="leave" element={<Leave />} />
             <Route path="office-tracker" element={<OfficeTracker />} />
             <Route path="profile" element={<Profile />} />
