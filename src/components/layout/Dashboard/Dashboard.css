@@ -6,9 +6,10 @@
 }
 
 .dashboard-main {
-  flex: 1;
+  flex: 1 0 auto;
   max-width: 1400px;
   width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 1rem;
+  overflow: visible;
 }
