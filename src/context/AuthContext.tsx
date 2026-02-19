@@ -3,6 +3,12 @@ import { createContext, useContext } from 'react';
 export interface User {
   email: string;
   uid: string;
+  displayName?: string;
+  photoURL?: string;
+  signInMethod?: 'google' | 'microsoft' | 'email' | 'github';
+  company?: string;
+  role?: string;
+  country?: string;
 }
 
 export interface AuthContextType {
@@ -12,6 +18,8 @@ export interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   loginWithGithub: () => Promise<void>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
   loading: boolean;
 }
 

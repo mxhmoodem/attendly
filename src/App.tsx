@@ -11,7 +11,7 @@ import AuthPage from './pages/Auth/AuthPage';
 import { Home } from './pages/Home/Home';
 import Leave from './pages/Leave/Leave';
 import OfficeTracker from './pages/office/OfficeTracker';
-import Profile from './pages/Profile/Profile';
+import Profile from './pages/Profile/Profile/Profile.tsx';
 import { ROUTES } from './constants/routes.ts';
 import './App.css';
 

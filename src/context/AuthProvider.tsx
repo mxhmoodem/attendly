@@ -6,10 +6,12 @@ import {
   signInWithPopup,
   signOut,
   onAuthStateChanged,
+  deleteUser as deleteFirebaseUser,
   type User as FirebaseUser
 } from 'firebase/auth';
 import { auth, googleProvider, githubProvider } from '../services/firebase';
 import { AuthContext, type User } from './AuthContext';
+import { getDocument, setDocument, deleteDocument } from '../services/database';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -21,12 +23,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        setUser({
-          email: firebaseUser.email || '',
-          uid: firebaseUser.uid
-        });
+        // Try to load user profile from Firestore
+        try {
+          const userProfile = await getDocument<User>('users', firebaseUser.uid);
+          
+          // Determine sign-in method
+          let signInMethod: 'google' | 'microsoft' | 'email' | 'github' = 'email';
+          if (firebaseUser.providerData[0]) {
+            const providerId = firebaseUser.providerData[0].providerId;
+            if (providerId.includes('google')) signInMethod = 'google';
+            else if (providerId.includes('microsoft')) signInMethod = 'microsoft';
+            else if (providerId.includes('github')) signInMethod = 'github';
+          }
+          
+          setUser({
+            email: firebaseUser.email || '',
+            uid: firebaseUser.uid,
+            displayName: userProfile?.displayName || firebaseUser.displayName || undefined,
+            photoURL: userProfile?.photoURL || firebaseUser.photoURL || undefined,
+            signInMethod,
+            company: userProfile?.company,
+            role: userProfile?.role,
+            country: userProfile?.country,
+          });
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+          // Fallback to basic user data
+          setUser({
+            email: firebaseUser.email || '',
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName || undefined,
+            photoURL: firebaseUser.photoURL || undefined,
+          });
+        }
       } else {
         setUser(null);
       }
@@ -98,7 +129,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const value = { user, login, register, loginWithGoogle, loginWithGithub, logout, loading };
+  const updateProfile = async (data: Partial<User>) => {
+    if (!user) throw new Error('No user logged in');
+    
+    try {
+      // Firestore rejects undefined values — omit any key whose value is undefined
+      const clean = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== undefined)
+      ) as Partial<User>;
+      await setDocument('users', user.uid, clean, true);
+      setUser({ ...user, ...clean });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to update profile');
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!user || !auth.currentUser) throw new Error('No user logged in');
+    
+    try {
+      // Delete user data from Firestore
+      await deleteDocument('users', user.uid);
+      // Delete Firebase Auth account
+      await deleteFirebaseUser(auth.currentUser);
+      setUser(null);
+    } catch (error) {
+      console.error('Delete account error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to delete account');
+    }
+  };
+
+  const value = { 
+    user, 
+    login, 
+    register, 
+    loginWithGoogle, 
+    loginWithGithub, 
+    logout, 
+    deleteAccount,
+    updateProfile,
+    loading 
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
