@@ -1,326 +1,245 @@
-# Firestore Database Setup
+# Firestore Database Guide
 
 ## Overview
-This project uses Firebase Firestore as the database for storing attendance, user profiles, leave requests, and other application data.
 
-## Collections Structure
+Attendly uses Firebase Firestore as its database. There are three active collections:
 
-### 📁 Collections
+| Collection | Document ID pattern | Purpose |
+|---|---|---|
+| `users` | `{uid}` | User profiles & settings |
+| `holidayLeave` | `{uid}` | Per-user leave allowance and leave entries |
+| `officeTracker` | `{uid}_{YYYY-MM}` | Per-user, per-month office-day tracking |
 
-#### 1. **users** - User profiles
+---
+
+## Collection Schemas
+
+### 1. `users` — User profiles
+
+One document per Firebase Auth user. Created automatically on registration or first social sign-in.
+
 ```typescript
 {
-  id: string (auto-generated or Firebase Auth UID)
-  uid: string (Firebase Auth UID)
-  email: string
-  displayName?: string
-  photoURL?: string
-  role: 'employee' | 'manager' | 'admin'
-  department?: string
-  position?: string
-  phoneNumber?: string
-  isActive: boolean
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  uid: string;            // Firebase Auth UID (mirrors the document ID)
+  email: string;
+  displayName?: string;
+  photoURL?: string;      // Stored as a base64 data-URL after profile image upload
+  role: string;           // Default: 'employee'
+  isActive: boolean;      // Default: true
+  company?: string;       // Set by user in Profile page
+  country?: string;       // Set by user in Profile page
+  updatedAt: Timestamp;
 }
 ```
 
-#### 2. **attendance** - Daily attendance records
+> **Note:** `role` and `isActive` are written with defaults (`'employee'` / `true`) at account
+> creation time so that downstream reads always find a valid document.
+
+---
+
+### 2. `holidayLeave` — Leave tracker
+
+One document per user. Stores the total leave allowance and the list of leave bookings.
+
 ```typescript
 {
-  id: string (auto-generated)
-  userId: string (ref to users)
-  date: Timestamp
-  checkInTime?: Timestamp
-  checkOutTime?: Timestamp
-  status: 'present' | 'absent' | 'late' | 'on-leave' | 'half-day'
-  location?: { latitude, longitude, address }
-  notes?: string
-  approvedBy?: string
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  availableDays: number;          // Total leave days available (default: 25)
+  entries: Array<{
+    id: string;                   // Client-generated unique ID
+    fromDate: string;             // YYYY-MM-DD
+    toDate: string;               // YYYY-MM-DD
+    note?: string;                // Optional free-text note
+  }>;
+  updatedAt: Timestamp;
 }
 ```
 
-#### 3. **leaveRequests** - Leave applications
+**Counting working days:** The UI excludes weekends and UK bank holidays when
+calculating how many days an entry consumes.
+
+---
+
+### 3. `officeTracker` — Office-day tracker
+
+One document per user per calendar month. Stores which days the user marked as
+office days, plus the compliance requirement percentage.
+
 ```typescript
 {
-  id: string (auto-generated)
-  userId: string (ref to users)
-  startDate: Timestamp
-  endDate: Timestamp
-  leaveType: 'sick' | 'vacation' | 'personal' | 'emergency' | 'other'
-  reason: string
-  status: 'pending' | 'approved' | 'rejected'
-  approvedBy?: string
-  approvalDate?: Timestamp
-  approverNotes?: string
-  totalDays: number
-  createdAt: Timestamp
-  updatedAt: Timestamp
+  userId: string;                  // Firebase Auth UID
+  month: string;                   // YYYY-MM (e.g. "2026-02")
+  reqValue: number;                // Required office percentage (0–100)
+  excludeWeekends: boolean;        // Whether weekends are excluded from calculation
+  excludeBankHolidays: boolean;    // Whether UK bank holidays are excluded
+  officeDays: string[];            // Array of YYYY-MM-DD strings marked as office days
+  excludedDays: Record<string, 'excluded' | 'holiday'>; // Manually excluded dates
+  updatedAt: Timestamp;
 }
 ```
 
-#### 4. **officeLocations** - Office locations
-```typescript
-{
-  id: string (auto-generated)
-  name: string
-  address: string
-  coordinates: { latitude, longitude }
-  radius: number (meters)
-  isActive: boolean
-  capacity?: number
-  createdAt: Timestamp
-  updatedAt: Timestamp
-}
-```
+---
 
-## Usage Examples
+## Reading & Writing Data
 
-### 1. Create User Profile After Registration
-```typescript
-import { setDocument } from '@/services/database';
-import type { UserProfile } from '@/types/database';
+All database operations go through `src/services/database.ts`.
 
-// After Firebase Auth registration
-const createUserProfile = async (uid: string, email: string, displayName?: string) => {
-  const userProfile: Omit<UserProfile, 'id' | 'createdAt' | 'updatedAt'> = {
-    uid,
-    email,
-    displayName,
-    role: 'employee',
-    isActive: true,
-  };
-  
-  await setDocument('users', uid, userProfile);
-};
-```
+### Read a user profile
 
-### 2. Mark Attendance
-```typescript
-import { createDocument } from '@/services/database';
-import type { AttendanceRecord } from '@/types/database';
-import { Timestamp } from 'firebase/firestore';
-
-const checkIn = async (userId: string) => {
-  const attendance: Omit<AttendanceRecord, 'id' | 'createdAt' | 'updatedAt'> = {
-    userId,
-    date: Timestamp.now(),
-    checkInTime: Timestamp.now(),
-    status: 'present',
-  };
-  
-  const attendanceId = await createDocument('attendance', attendance);
-  return attendanceId;
-};
-```
-
-### 3. Query User's Attendance Records
-```typescript
-import { queryDocuments } from '@/services/database';
-import type { AttendanceRecord } from '@/types/database';
-
-const getUserAttendance = async (userId: string, month: number, year: number) => {
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0);
-  
-  const records = await queryDocuments<AttendanceRecord>(
-    'attendance',
-    [
-      { field: 'userId', operator: '==', value: userId },
-      { field: 'date', operator: '>=', value: Timestamp.fromDate(startDate) },
-      { field: 'date', operator: '<=', value: Timestamp.fromDate(endDate) },
-    ],
-    'date',
-    'desc'
-  );
-  
-  return records;
-};
-```
-
-### 4. Submit Leave Request
-```typescript
-import { createDocument } from '@/services/database';
-import type { LeaveRequest } from '@/types/database';
-import { Timestamp } from 'firebase/firestore';
-
-const submitLeaveRequest = async (
-  userId: string,
-  startDate: Date,
-  endDate: Date,
-  leaveType: string,
-  reason: string
-) => {
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-  
-  const leaveRequest: Omit<LeaveRequest, 'id' | 'createdAt' | 'updatedAt'> = {
-    userId,
-    startDate: Timestamp.fromDate(startDate),
-    endDate: Timestamp.fromDate(endDate),
-    leaveType: leaveType as any,
-    reason,
-    status: 'pending',
-    totalDays,
-  };
-  
-  const requestId = await createDocument('leaveRequests', leaveRequest);
-  return requestId;
-};
-```
-
-### 5. Get User Profile
 ```typescript
 import { getDocument } from '@/services/database';
-import type { UserProfile } from '@/types/database';
 
-const getUserProfile = async (uid: string) => {
-  const profile = await getDocument<UserProfile>('users', uid);
-  return profile;
-};
+const profile = await getDocument('users', uid);
+// Returns null if no document exists yet
 ```
 
-### 6. Update User Profile
-```typescript
-import { updateDocument } from '@/services/database';
-
-const updateUserProfile = async (uid: string, data: Partial<UserProfile>) => {
-  await updateDocument('users', uid, data);
-};
-```
-
-### 7. Real-time Listeners (Advanced)
-For real-time updates, use Firestore's `onSnapshot`:
+### Write / update a user profile
 
 ```typescript
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/services/firebase';
+import { setDocument } from '@/services/database';
 
-const subscribeToUserProfile = (uid: string, callback: (profile: UserProfile) => void) => {
-  const unsubscribe = onSnapshot(doc(db, 'users', uid), (doc) => {
-    if (doc.exists()) {
-      callback({ id: doc.id, ...doc.data() } as UserProfile);
-    }
-  });
-  
-  // Call unsubscribe() when component unmounts
-  return unsubscribe;
-};
+// merge=true → partial update (preserves existing fields)
+await setDocument('users', uid, { company: 'Acme', country: 'United Kingdom' }, true);
 ```
+
+### Create the initial profile on registration
+
+This is handled automatically inside `AuthProvider` for email/password
+registration and for the first-ever Google or GitHub sign-in:
+
+```typescript
+await setDocument('users', uid, {
+  uid,
+  email,
+  role: 'employee',
+  isActive: true,
+}, false); // merge=false → clean initial write
+```
+
+### Read leave data
+
+```typescript
+import { getDocument } from '@/services/database';
+
+const data = await getDocument<{ availableDays: number; entries: LeaveEntry[] }>(
+  'holidayLeave',
+  uid
+);
+```
+
+### Write leave data
+
+```typescript
+import { setDocument } from '@/services/database';
+
+await setDocument('holidayLeave', uid, {
+  availableDays,
+  entries, // strip undefined fields before writing
+});
+```
+
+### Read office-tracker data for a month
+
+```typescript
+import { getDocument } from '@/services/database';
+
+const monthKey = '2026-02';
+const data = await getDocument('officeTracker', `${uid}_${monthKey}`);
+```
+
+### Write office-tracker data
+
+```typescript
+import { setDocument } from '@/services/database';
+
+await setDocument('officeTracker', `${uid}_${monthKey}`, {
+  userId: uid,
+  month: monthKey,
+  reqValue,
+  excludeWeekends,
+  excludeBankHolidays,
+  officeDays: [...officeDays],
+  excludedDays: Object.fromEntries(excludedDays),
+});
+```
+
+---
 
 ## Firestore Security Rules
 
-Add these rules in Firebase Console → Firestore Database → Rules:
+Copy these rules into **Firebase Console → Firestore Database → Rules**:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
-    function isAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    function isManagerOrAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['manager', 'admin'];
-    }
-    
-    // Users collection
+
+    // User profiles — owner can read/write; others can read (for team features)
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read:   if isAuthenticated();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
-    
-    // Attendance collection
-    match /attendance/{attendanceId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(resource.data.userId) || isManagerOrAdmin();
-      allow delete: if isAdmin();
+
+    // Holiday leave — strictly per-user
+    match /holidayLeave/{userId} {
+      allow read, write: if isOwner(userId);
     }
-    
-    // Leave requests collection
-    match /leaveRequests/{requestId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(resource.data.userId) || isManagerOrAdmin();
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
-    }
-    
-    // Office locations collection
-    match /officeLocations/{locationId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    
-    // Departments collection
-    match /departments/{deptId} {
-      allow read: if isAuthenticated();
-      allow write: if isManagerOrAdmin();
-    }
-    
-    // Notifications collection
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+    // Office tracker — document IDs are "{uid}_{YYYY-MM}"
+    match /officeTracker/{docId} {
+      allow read, write: if isAuthenticated() &&
+        request.auth.uid == resource.data.userId;
+      // Allow create (resource.data is not yet available)
+      allow create: if isAuthenticated() &&
+        request.auth.uid == request.resource.data.userId;
     }
   }
 }
 ```
 
-## Indexing (Performance Optimization)
+---
 
-Create these composite indexes in Firebase Console → Firestore Database → Indexes:
+## Composite Indexes
 
-1. **attendance** collection:
-   - Fields: `userId` (Ascending), `date` (Descending)
-   - For querying user attendance by date
+Create these in **Firebase Console → Firestore Database → Indexes** if you add
+query-based features in future:
 
-2. **leaveRequests** collection:
-   - Fields: `userId` (Ascending), `status` (Ascending), `startDate` (Descending)
-   - For querying user's leave requests by status
+| Collection | Fields | Direction |
+|---|---|---|
+| `officeTracker` | `userId` ASC, `month` DESC | For listing a user's month history |
+| `holidayLeave` | *(no composite index needed — single-document per user)* | — |
 
-3. **attendance** collection:
-   - Fields: `date` (Ascending), `status` (Ascending)
-   - For admin dashboard queries
+---
 
 ## Best Practices
 
-1. **Always use TypeScript types** from `@/types/database.ts`
-2. **Use the generic database service** in `@/services/database.ts`
-3. **Add indexes** for frequently queried fields
-4. **Implement proper security rules** in Firebase Console
-5. **Handle errors gracefully** - all database functions throw errors
-6. **Use transactions** for operations that need atomicity
-7. **Paginate large collections** using Firestore's cursor-based pagination
-8. **Clean up listeners** when components unmount
+1. **Never store `undefined` values** — Firestore rejects them. Strip them before
+   writing (see the `persist` helper in `Leave.tsx`).
+2. **Use `merge: true`** for partial profile updates so you never accidentally
+   overwrite unrelated fields.
+3. **Use `merge: false`** only for the initial document creation, so you get a
+   clean write without stale fields from a previous account with the same UID.
+4. **Clean up listeners** when components unmount (the `onAuthStateChanged`
+   unsubscribe is already handled in `AuthProvider`).
+5. **All database functions throw** — always `await` them inside a `try/catch`.
 
-## Next Steps
+---
 
-1. Enable Firestore in your Firebase project (Console → Build → Firestore Database)
-2. Set up security rules (copy from above)
-3. Create indexes as needed (Firebase will prompt you)
-4. Start using the database service in your components!
+## Local Development Notes
 
-## Deployment Notes
+1. Enable Firestore in your Firebase project (Console → Build → Firestore Database).
+2. Set up security rules (copy from above).
+3. Copy `.env.example` to `.env.local` and fill in your Firebase config values.
+4. Run `npm run dev` — the app will connect to your real Firestore project.
 
-When deploying, you'll use:
-- **Vercel** or **Firebase Hosting** for frontend
-- **Firestore** handles scaling automatically
-- No backend server needed!
+> There is no local Firestore emulator configured. To add one, install the
+> Firebase CLI and follow the emulator setup guide.

@@ -83,10 +83,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (email: string, password: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      setUser({
-        email: userCredential.user.email || '',
-        uid: userCredential.user.uid
-      });
+      const { uid } = userCredential.user;
+
+      // Persist a default profile document so downstream reads always find it
+      await setDocument('users', uid, {
+        uid,
+        email,
+        role: 'employee',
+        isActive: true,
+      }, false);
+
+      setUser({ email, uid, role: 'employee' });
     } catch (error) {
       console.error('Registration error:', error);
       throw new Error(error instanceof Error ? error.message : 'Failed to register');
@@ -106,9 +113,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      const { uid, email, displayName, photoURL } = result.user;
+
+      // Load existing profile; create one with defaults on first social sign-in
+      let profile = await getDocument<User>('users', uid);
+      if (!profile) {
+        const newProfile = {
+          uid,
+          email: email || '',
+          displayName: displayName || undefined,
+          photoURL: photoURL || undefined,
+          role: 'employee',
+          isActive: true,
+        };
+        await setDocument('users', uid, newProfile, false);
+        profile = newProfile as User;
+      }
+
       setUser({
-        email: result.user.email || '',
-        uid: result.user.uid
+        email: email || '',
+        uid,
+        displayName: profile.displayName || displayName || undefined,
+        photoURL: profile.photoURL || photoURL || undefined,
+        signInMethod: 'google',
+        company: profile.company,
+        role: profile.role,
+        country: profile.country,
       });
     } catch (error) {
       console.error('Google login error:', error);
@@ -119,9 +149,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithGithub = async () => {
     try {
       const result = await signInWithPopup(auth, githubProvider);
+      const { uid, email, displayName, photoURL } = result.user;
+
+      // Load existing profile; create one with defaults on first social sign-in
+      let profile = await getDocument<User>('users', uid);
+      if (!profile) {
+        const newProfile = {
+          uid,
+          email: email || '',
+          displayName: displayName || undefined,
+          photoURL: photoURL || undefined,
+          role: 'employee',
+          isActive: true,
+        };
+        await setDocument('users', uid, newProfile, false);
+        profile = newProfile as User;
+      }
+
       setUser({
-        email: result.user.email || '',
-        uid: result.user.uid
+        email: email || '',
+        uid,
+        displayName: profile.displayName || displayName || undefined,
+        photoURL: profile.photoURL || photoURL || undefined,
+        signInMethod: 'github',
+        company: profile.company,
+        role: profile.role,
+        country: profile.country,
       });
     } catch (error) {
       console.error('GitHub login error:', error);
