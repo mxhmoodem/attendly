@@ -140,6 +140,7 @@ interface CalendarProps {
   excludedDays: ExcludedDaysMap;
   excludeWeekends: boolean;
   excludeBankHolidays: boolean;
+  holidayLeaveDays: Set<string>;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onDayTap: (dateStr: string) => void;
@@ -152,6 +153,7 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
   excludedDays,
   excludeWeekends,
   excludeBankHolidays,
+  holidayLeaveDays,
   onPrevMonth,
   onNextMonth,
   onDayTap,
@@ -178,9 +180,11 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
       if (exclType === 'excluded') return 'excluded';
       // Always visually distinguish bank holidays (unless explicitly marked as office)
       if (isBankHoliday(dateStr) && !officeDays.has(dateStr)) return 'holiday';
+      // Holiday leave days from the Leave page
+      if (holidayLeaveDays.has(dateStr) && !officeDays.has(dateStr)) return 'holiday';
       return officeDays.has(dateStr) ? 'office' : 'home';
     },
-    [rangeStartStr, rangeEndStr, excludeWeekends, excludeBankHolidays, excludedDays, officeDays]
+    [rangeStartStr, rangeEndStr, excludeWeekends, excludeBankHolidays, excludedDays, officeDays, holidayLeaveDays]
   );
 
   const isInteractive = useCallback(
@@ -189,9 +193,11 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
       const date = parseDate(dateStr);
       if (isBankHoliday(dateStr) && excludeBankHolidays) return false;
       if (isWeekend(date) && excludeWeekends) return false;
+      // Holiday leave days are read-only in office tracker
+      if (holidayLeaveDays.has(dateStr)) return false;
       return true;
     },
-    [rangeStartStr, rangeEndStr, excludeBankHolidays, excludeWeekends]
+    [rangeStartStr, rangeEndStr, excludeBankHolidays, excludeWeekends, holidayLeaveDays]
   );
 
   const handlePointerDown = (dateStr: string) => {
@@ -281,9 +287,10 @@ interface ExclusionsCardProps {
   excludeWeekends: boolean;
   excludeBankHolidays: boolean;
   excludedDays: ExcludedDaysMap;
+  holidayLeaveEntries: Array<{ fromDate: string; toDate: string; days: number }>;
   onExcludeWeekendsChange: (v: boolean) => void;
   onExcludeBankHolidaysChange: (v: boolean) => void;
-  onAddExcludedDay: (dateStr: string, type: ExclusionType) => void;
+  onAddExcludedDay: (dateStr: string) => void;
   onRemoveExcludedDay: (dateStr: string) => void;
 }
 
@@ -293,22 +300,22 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
   excludeWeekends,
   excludeBankHolidays,
   excludedDays,
+  holidayLeaveEntries,
   onExcludeWeekendsChange,
   onExcludeBankHolidaysChange,
   onAddExcludedDay,
   onRemoveExcludedDay,
 }) => {
   const [newDate, setNewDate] = useState('');
-  const [newType, setNewType] = useState<ExclusionType>('excluded');
 
   const handleAdd = () => {
     if (newDate) {
-      onAddExcludedDay(newDate, newType);
+      onAddExcludedDay(newDate);
       setNewDate('');
     }
   };
 
-  const count = excludedDays.size;
+  const count = excludedDays.size + holidayLeaveEntries.length;
 
   return (
     <div className="ot-card ot-card--collapsible">
@@ -350,21 +357,7 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
 
           {/* Add exclusion form */}
           <div className="ot-excl-section">
-            <p className="ot-excl-section-title">Add Exclusion</p>
-            <div className="ot-excl-type-seg">
-              <button
-                className={`ot-excl-type-btn${newType === 'excluded' ? ' ot-excl-type-btn--active ot-excl-type-btn--excl' : ''}`}
-                onClick={() => setNewType('excluded')}
-              >
-                <MdBlock size={14} /> Work Exclusion
-              </button>
-              <button
-                className={`ot-excl-type-btn${newType === 'holiday' ? ' ot-excl-type-btn--active ot-excl-type-btn--hol' : ''}`}
-                onClick={() => setNewType('holiday')}
-              >
-                <MdBeachAccess size={14} /> Holiday
-              </button>
-            </div>
+            <p className="ot-excl-section-title">Add Work Exclusion</p>
             <div className="ot-add-excl-row">
               <input
                 type="date"
@@ -378,17 +371,16 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
             </div>
           </div>
 
-          {/* Exclusion list */}
+          {/* Manual work exclusions list */}
           {excludedDays.size > 0 && (
             <div className="ot-excl-section">
-              <p className="ot-excl-section-title">Excluded Dates</p>
+              <p className="ot-excl-section-title">Work Exclusions</p>
               <ul className="ot-excl-list">
-                {[...excludedDays.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([d, type]) => (
+                {[...excludedDays.keys()].sort().map((d) => (
                   <li key={d} className="ot-excl-item">
                     <div className="ot-excl-item-left">
-                      <span className={`ot-excl-type-badge ot-excl-type-badge--${type}`}>
-                        {type === 'holiday' ? <MdBeachAccess size={11} /> : <MdBlock size={11} />}
-                        {type === 'holiday' ? 'Holiday' : 'Excluded'}
+                      <span className="ot-excl-type-badge ot-excl-type-badge--excluded">
+                        <MdBlock size={11} /> Excluded
                       </span>
                       <span className="ot-excl-date">{formatShortDate(d)}</span>
                     </div>
@@ -397,6 +389,33 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
                     </button>
                   </li>
                 ))}
+              </ul>
+            </div>
+          )}
+          {/* Holiday leave — read-only, sourced from Leave page */}
+          {holidayLeaveEntries.length > 0 && (
+            <div className="ot-excl-section">
+              <p className="ot-excl-section-title">
+                Holiday Leave <span className="ot-excl-readonly-tag">(from Leave page)</span>
+              </p>
+              <ul className="ot-excl-list">
+                {[...holidayLeaveEntries]
+                  .sort((a, b) => a.fromDate.localeCompare(b.fromDate))
+                  .map((e) => (
+                    <li key={e.fromDate + e.toDate} className="ot-excl-item ot-excl-item--readonly">
+                      <div className="ot-excl-item-left">
+                        <span className="ot-excl-type-badge ot-excl-type-badge--holiday">
+                          <MdBeachAccess size={11} /> Holiday
+                        </span>
+                        <span className="ot-excl-date">
+                          {e.fromDate === e.toDate
+                            ? formatShortDate(e.fromDate)
+                            : `${formatShortDate(e.fromDate)} – ${formatShortDate(e.toDate)}`}
+                        </span>
+                        <span className="ot-excl-days-badge">{e.days}d</span>
+                      </div>
+                    </li>
+                  ))}
               </ul>
             </div>
           )}
@@ -414,6 +433,7 @@ interface BreakdownCardProps {
   weekendCount: number;
   bankHolidayCount: number;
   manualExcludedCount: number;
+  holidayLeaveCount: number;
   totalExcluded: number;
   workingDays: number;
   requiredOfficeDays: number;
@@ -425,6 +445,7 @@ const BreakdownCard: React.FC<BreakdownCardProps> = ({
   weekendCount,
   bankHolidayCount,
   manualExcludedCount,
+  holidayLeaveCount,
   totalExcluded,
   workingDays,
   requiredOfficeDays,
@@ -457,6 +478,12 @@ const BreakdownCard: React.FC<BreakdownCardProps> = ({
           <tr className="ot-bd-excl">
             <td>↳ Custom exclusions</td>
             <td className="ot-bd-val">−{manualExcludedCount}</td>
+          </tr>
+        )}
+        {holidayLeaveCount > 0 && (
+          <tr className="ot-bd-excl">
+            <td>↳ Holiday leave</td>
+            <td className="ot-bd-val">−{holidayLeaveCount}</td>
           </tr>
         )}
         <tr className="ot-bd-sep">
@@ -535,7 +562,9 @@ const OfficeTracker: React.FC = () => {
   const [exclusionsOpen, setExclusionsOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-
+  // ── Holiday leave overlay (from Leave page) ──
+  const [holidayLeaveDays, setHolidayLeaveDays] = useState<Set<string>>(new Set());
+  const [holidayLeaveEntries, setHolidayLeaveEntries] = useState<Array<{ fromDate: string; toDate: string; days: number }>>([]);
   // ── Auth & persistence ───────────────────────
   const { user } = useAuth();
   const monthKey = `${viewMonth.getFullYear()}-${String(viewMonth.getMonth() + 1).padStart(2, '0')}`;
@@ -569,6 +598,36 @@ const OfficeTracker: React.FC = () => {
     return () => { cancelled = true; };
   }, [user, monthKey]);
 
+  // ── Load holiday leave overlay ──────────────
+  useEffect(() => {
+    if (!user) return;
+    getDocument<{ entries?: Array<{ fromDate: string; toDate: string }> }>(
+      'holidayLeave', user.uid
+    )
+      .then((data) => {
+        if (!data?.entries) {
+          setHolidayLeaveDays(new Set());
+          setHolidayLeaveEntries([]);
+          return;
+        }
+        const set = new Set<string>();
+        const enriched: Array<{ fromDate: string; toDate: string; days: number }> = [];
+        for (const entry of data.entries) {
+          const start = parseDate(entry.fromDate);
+          const end   = parseDate(entry.toDate);
+          let days = 0;
+          getDaysInRange(start, end).forEach((d) => {
+            const ds = formatDate(d);
+            if (!isWeekend(d) && !isBankHoliday(ds)) { set.add(ds); days++; }
+          });
+          enriched.push({ fromDate: entry.fromDate, toDate: entry.toDate, days });
+        }
+        setHolidayLeaveDays(set);
+        setHolidayLeaveEntries(enriched);
+      })
+      .catch(console.error);
+  }, [user]);
+
   // ── Date range = full month of viewMonth ─────
   const dateRange = useMemo(() => {
     const y = viewMonth.getFullYear();
@@ -585,6 +644,7 @@ const OfficeTracker: React.FC = () => {
     let weekendCount = 0;
     let bankHolidayCount = 0;
     let manualExcludedCount = 0;
+    let holidayLeaveCount = 0;
     const workingDaySet = new Set<string>();
 
     for (const day of allDays) {
@@ -592,11 +652,12 @@ const OfficeTracker: React.FC = () => {
       if (isWeekend(day) && excludeWeekends) { weekendCount++; continue; }
       if (isBankHoliday(ds) && excludeBankHolidays) { bankHolidayCount++; continue; }
       if (excludedDays.has(ds)) { manualExcludedCount++; continue; }
+      if (holidayLeaveDays.has(ds)) { holidayLeaveCount++; continue; }
       workingDaySet.add(ds);
     }
 
     const totalDays = allDays.length;
-    const totalExcluded = weekendCount + bankHolidayCount + manualExcludedCount;
+    const totalExcluded = weekendCount + bankHolidayCount + manualExcludedCount + holidayLeaveCount;
     const workingDays = workingDaySet.size;
     const requiredOfficeDays = Math.ceil(workingDays * reqValue / 100);
     const selectedOfficeDays = [...officeDays].filter((d) => workingDaySet.has(d)).length;
@@ -619,6 +680,7 @@ const OfficeTracker: React.FC = () => {
       weekendCount,
       bankHolidayCount,
       manualExcludedCount,
+      holidayLeaveCount,
       totalExcluded,
       workingDays,
       workingDaySet,
@@ -627,7 +689,7 @@ const OfficeTracker: React.FC = () => {
       progressPercentage,
       complianceStatus,
     };
-  }, [dateRange, reqValue, officeDays, excludedDays, excludeWeekends, excludeBankHolidays]);
+  }, [dateRange, reqValue, officeDays, excludedDays, excludeWeekends, excludeBankHolidays, holidayLeaveDays]);
 
   // ── Day interactions ─────────────────────────
   const handleDayTap = useCallback(
@@ -659,8 +721,8 @@ const OfficeTracker: React.FC = () => {
   );
 
   // ── Exclusion helpers ────────────────────────
-  const addExcludedDay = (dateStr: string, type: ExclusionType) => {
-    setExcludedDays((prev) => new Map(prev).set(dateStr, type));
+  const addExcludedDay = (dateStr: string) => {
+    setExcludedDays((prev) => new Map(prev).set(dateStr, 'excluded'));
     setOfficeDays((prev) => { const n = new Set(prev); n.delete(dateStr); return n; });
   };
 
@@ -734,6 +796,7 @@ const OfficeTracker: React.FC = () => {
           excludedDays={excludedDays}
           excludeWeekends={excludeWeekends}
           excludeBankHolidays={excludeBankHolidays}
+          holidayLeaveDays={holidayLeaveDays}
           onPrevMonth={() => setViewMonth((m) => addMonths(m, -1))}
           onNextMonth={() => setViewMonth((m) => addMonths(m, 1))}
           onDayTap={handleDayTap}
@@ -746,6 +809,7 @@ const OfficeTracker: React.FC = () => {
           excludeWeekends={excludeWeekends}
           excludeBankHolidays={excludeBankHolidays}
           excludedDays={excludedDays}
+          holidayLeaveEntries={holidayLeaveEntries}
           onExcludeWeekendsChange={setExcludeWeekends}
           onExcludeBankHolidaysChange={setExcludeBankHolidays}
           onAddExcludedDay={addExcludedDay}
@@ -757,6 +821,7 @@ const OfficeTracker: React.FC = () => {
           weekendCount={calc.weekendCount}
           bankHolidayCount={calc.bankHolidayCount}
           manualExcludedCount={calc.manualExcludedCount}
+          holidayLeaveCount={calc.holidayLeaveCount}
           totalExcluded={calc.totalExcluded}
           workingDays={calc.workingDays}
           requiredOfficeDays={calc.requiredOfficeDays}

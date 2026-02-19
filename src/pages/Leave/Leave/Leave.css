@@ -1,0 +1,882 @@
+/* ─── CSS Custom Properties ────────────────────── */
+.hl-page {
+  --hl-primary:       #6b9080;
+  --hl-primary-dark:  #4f7268;
+  --hl-primary-10:    #f0f5f3;
+  --hl-primary-20:    #d4e5df;
+  --hl-primary-40:    #a8c5bb;
+  --hl-bank:          #0d9488;
+  --hl-bank-bg:       #ccfbf1;
+  --hl-bank-text:     #0f766e;
+  --hl-warning:       #f59e0b;
+  --hl-danger:        #ef4444;
+  --hl-text:          #111827;
+  --hl-text-muted:    #6b7280;
+  --hl-text-light:    #9ca3af;
+  --hl-border:        #e5e7eb;
+  --hl-bg:            #f9fafb;
+  --hl-card-bg:       #ffffff;
+  --hl-radius:        16px;
+  --hl-shadow:        0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+
+  background: var(--hl-bg);
+  padding: 0 0 56px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--hl-text);
+}
+
+/* ─── Header ─────────────────────────────────── */
+.hl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+}
+
+.hl-header-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--hl-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.hl-header-subtitle {
+  font-size: 0.8rem;
+  color: var(--hl-text-muted);
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+
+.hl-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--hl-primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(107, 144, 128, 0.35);
+}
+
+.hl-add-btn:hover  { background: var(--hl-primary-dark); }
+.hl-add-btn:active { transform: scale(0.96); }
+
+.hl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hl-save-toast {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  animation: hl-fade-in 0.2s ease;
+}
+
+.hl-save-toast--saving { background: #f3f4f6; color: var(--hl-text-muted); }
+.hl-save-toast--saved  { background: #dcfce7; color: #15803d; }
+.hl-save-toast--error  { background: #fee2e2; color: #b91c1c; }
+
+@keyframes hl-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Summary Card ───────────────────────────── */
+.hl-summary-card {
+  background: var(--hl-card-bg);
+  border-radius: var(--hl-radius);
+  box-shadow: var(--hl-shadow);
+  margin: 8px 0 12px;
+  padding: 20px 20px 18px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Ring */
+.hl-ring-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hl-ring-wrap svg {
+  position: absolute;
+  inset: 0;
+}
+
+.hl-ring-center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.hl-ring-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--hl-text);
+  display: block;
+}
+
+.hl-ring-sub {
+  font-size: 0.6rem;
+  color: var(--hl-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-top: 1px;
+}
+
+/* Stats */
+.hl-summary-stats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hl-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hl-stat-label {
+  font-size: 0.82rem;
+  color: var(--hl-text-muted);
+  font-weight: 500;
+}
+
+.hl-stat-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--hl-text);
+}
+
+.hl-stat-value--remaining {
+  color: var(--hl-primary);
+}
+
+.hl-stat-value--warning {
+  color: var(--hl-warning);
+}
+
+/* Available editable counter */
+.hl-available-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hl-counter-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--hl-border);
+  background: var(--hl-primary-10);
+  color: var(--hl-primary-dark);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.hl-counter-btn:hover  { background: var(--hl-primary-20); }
+.hl-counter-btn:active { transform: scale(0.9); }
+
+.hl-available-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--hl-text);
+  min-width: 24px;
+  text-align: center;
+  cursor: text;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.hl-available-value:hover {
+  background: var(--hl-primary-10);
+}
+
+.hl-available-input {
+  width: 44px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: center;
+  border: 1.5px solid var(--hl-primary);
+  border-radius: 6px;
+  padding: 2px 4px;
+  outline: none;
+  color: var(--hl-text);
+  background: var(--hl-card-bg);
+}
+
+/* ─── Bank Holidays Card ─────────────────────── */
+.hl-bank-card {
+  background: var(--hl-card-bg);
+  border-radius: var(--hl-radius);
+  box-shadow: var(--hl-shadow);
+  margin: 0 0 12px;
+  overflow: hidden;
+}
+
+.hl-bank-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f0faf8 0%, #e6f5f1 100%);
+  transition: background 0.15s;
+}
+
+.hl-bank-header:hover {
+  background: linear-gradient(135deg, #e6f5f1 0%, #d4ede7 100%);
+}
+
+.hl-bank-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hl-bank-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--hl-bank-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hl-bank);
+  flex-shrink: 0;
+}
+
+.hl-bank-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--hl-bank);
+}
+
+.hl-bank-sublabel {
+  font-size: 0.73rem;
+  color: var(--hl-text-muted);
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.hl-bank-toggle {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--hl-bank);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--hl-bank-bg);
+  transition: opacity 0.15s;
+}
+
+.hl-bank-toggle:hover { opacity: 0.75; }
+
+.hl-bank-list {
+  padding: 4px 0 8px;
+  border-top: 1px solid #e0f5f1;
+}
+
+.hl-bank-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  border-bottom: 1px solid #f3fbf9;
+}
+
+.hl-bank-item:last-child {
+  border-bottom: none;
+}
+
+.hl-bank-name {
+  font-size: 0.83rem;
+  color: var(--hl-text);
+  font-weight: 500;
+}
+
+.hl-bank-date-str {
+  font-size: 0.78rem;
+  color: var(--hl-bank);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─── Tab Toggle ─────────────────────────────── */
+.hl-tabs {
+  display: flex;
+  background: var(--hl-card-bg);
+  border-radius: 12px;
+  margin: 0 0 12px;
+  padding: 4px;
+  box-shadow: var(--hl-shadow);
+  gap: 4px;
+}
+
+.hl-tab {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--hl-text-muted);
+  transition: all 0.2s;
+}
+
+.hl-tab--active {
+  background: var(--hl-primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(107, 144, 128, 0.3);
+}
+
+/* ─── My Leave Tab ───────────────────────────── */
+.hl-my-leave {
+  padding: 0;
+}
+
+.hl-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--hl-text-muted);
+}
+
+.hl-empty p {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+}
+
+.hl-empty-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--hl-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.hl-empty-add-btn:hover { background: var(--hl-primary-dark); }
+
+.hl-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hl-entry-card {
+  background: var(--hl-card-bg);
+  border-radius: var(--hl-radius);
+  box-shadow: var(--hl-shadow);
+  padding: 14px 14px 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hl-entry-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--hl-primary-10);
+  flex-shrink: 0;
+}
+
+.hl-entry-days {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--hl-primary);
+  line-height: 1;
+}
+
+.hl-entry-unit {
+  font-size: 0.62rem;
+  color: var(--hl-primary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.hl-entry-mid {
+  flex: 1;
+  min-width: 0;
+}
+
+.hl-entry-range {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--hl-text);
+}
+
+.hl-entry-note {
+  font-size: 0.76rem;
+  color: var(--hl-text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hl-entry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--hl-primary);
+  background: var(--hl-primary-10);
+  border-radius: 6px;
+  padding: 2px 7px;
+  margin-top: 4px;
+}
+
+.hl-entry-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: #fef2f2;
+  color: #ef4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.hl-entry-delete:hover  { background: #fee2e2; }
+.hl-entry-delete:active { transform: scale(0.92); }
+
+/* ─── Calendar Card ──────────────────────────── */
+.hl-cal-card {
+  background: var(--hl-card-bg);
+  border-radius: var(--hl-radius);
+  box-shadow: var(--hl-shadow);
+  margin: 0 0 12px;
+  padding: 16px 12px 14px;
+}
+
+.hl-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+
+.hl-cal-month-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--hl-text);
+}
+
+.hl-cal-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.hl-cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--hl-border);
+  background: var(--hl-card-bg);
+  color: var(--hl-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.hl-cal-nav-btn:hover {
+  background: var(--hl-primary-10);
+  border-color: var(--hl-primary-40);
+}
+
+/* Calendar grid */
+.hl-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.hl-cal-dow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--hl-text-muted);
+  text-align: center;
+  padding: 4px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hl-cal-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  position: relative;
+}
+
+.hl-cal-cell:hover:not(.hl-cal-cell--outside):not(.hl-cal-cell--bank-holiday):not(.hl-cal-cell--weekend) {
+  background: var(--hl-primary-10);
+}
+
+.hl-cal-cell:active:not(.hl-cal-cell--outside):not(.hl-cal-cell--bank-holiday):not(.hl-cal-cell--weekend) {
+  transform: scale(0.88);
+}
+
+.hl-cal-day-num {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--hl-text);
+  line-height: 1;
+  z-index: 1;
+  position: relative;
+}
+
+/* Outside month */
+.hl-cal-cell--outside {
+  cursor: default;
+}
+.hl-cal-cell--outside .hl-cal-day-num {
+  color: var(--hl-text-light);
+  font-weight: 400;
+}
+
+/* Weekend (in month) */
+.hl-cal-cell--weekend .hl-cal-day-num {
+  color: var(--hl-text-muted);
+}
+
+/* Today */
+.hl-cal-cell--today::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 8px;
+  border: 2px solid var(--hl-primary);
+  pointer-events: none;
+}
+
+/* Leave */
+.hl-cal-cell--leave {
+  background: var(--hl-primary);
+}
+
+.hl-cal-cell--leave .hl-cal-day-num {
+  color: #fff;
+  font-weight: 600;
+}
+
+.hl-cal-cell--leave.hl-cal-cell--today::before {
+  border-color: rgba(255,255,255,0.6);
+}
+
+/* Leave range connectors */
+.hl-cal-cell--leave-start {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--hl-primary);
+}
+
+.hl-cal-cell--leave-end {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background: var(--hl-primary);
+}
+
+.hl-cal-cell--leave-mid {
+  border-radius: 0;
+  background: var(--hl-primary);
+}
+
+.hl-cal-cell--leave-mid .hl-cal-day-num {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Bank holiday */
+.hl-cal-cell--bank-holiday {
+  background: var(--hl-bank-bg);
+  cursor: default;
+}
+
+.hl-cal-cell--bank-holiday .hl-cal-day-num {
+  color: var(--hl-bank-text);
+  font-weight: 600;
+}
+
+/* Fri/Sun - col separators for range display */
+.hl-cal-cell--leave-end-row,
+.hl-cal-cell--leave-start-row {
+  border-radius: 10px;
+}
+
+/* ─── Calendar Legend ────────────────────────── */
+.hl-cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px 2px;
+  flex-wrap: wrap;
+}
+
+.hl-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.73rem;
+  color: var(--hl-text-muted);
+  font-weight: 500;
+}
+
+.hl-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.hl-legend-swatch--leave       { background: var(--hl-primary); }
+.hl-legend-swatch--bank-holiday{ background: var(--hl-bank-bg); border: 1.5px solid var(--hl-bank); }
+.hl-legend-swatch--today       { border: 2px solid var(--hl-primary); background: transparent; border-radius: 4px; }
+
+/* ─── Bottom Sheet Overlay ───────────────────── */
+.hl-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  backdrop-filter: blur(2px);
+}
+
+.hl-sheet {
+  background: var(--hl-card-bg);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  margin: 0 auto 60px;
+  padding: 0 20px 32px;
+  animation: hl-slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: calc(90vh - 60px);
+  overflow-y: auto;
+}
+
+@keyframes hl-slide-up {
+  from { transform: translateY(100%); opacity: 0.5; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.hl-sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--hl-border);
+  margin: 12px auto 20px;
+}
+
+.hl-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.hl-sheet-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--hl-text);
+  margin: 0;
+}
+
+.hl-sheet-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--hl-primary-10);
+  color: var(--hl-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.hl-sheet-close:hover { background: var(--hl-primary-20); }
+
+/* ─── Add Leave Form ─────────────────────────── */
+.hl-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.hl-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hl-form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--hl-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hl-form-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--hl-primary-10);
+  color: var(--hl-primary-dark);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.hl-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.hl-form-input {
+  width: 100%;
+  border: 1.5px solid var(--hl-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: var(--hl-text);
+  background: var(--hl-card-bg);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.hl-form-input:focus {
+  border-color: var(--hl-primary);
+  box-shadow: 0 0 0 3px rgba(107, 144, 128, 0.15);
+}
+
+/* Working days preview */
+.hl-form-preview {
+  background: var(--hl-primary-10);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: -6px;
+}
+
+.hl-form-preview-days {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--hl-primary-dark);
+}
+
+.hl-form-preview-muted {
+  font-size: 0.78rem;
+  color: var(--hl-text-muted);
+  margin-left: 4px;
+}
+
+/* Submit */
+.hl-form-submit {
+  width: 100%;
+  background: var(--hl-primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.1s, box-shadow 0.18s;
+  box-shadow: 0 2px 12px rgba(107, 144, 128, 0.35);
+  margin-top: 4px;
+}
+
+.hl-form-submit:hover:not(:disabled)  { background: var(--hl-primary-dark); }
+.hl-form-submit:active:not(:disabled) { transform: scale(0.97); }
+
+.hl-form-submit:disabled {
+  background: var(--hl-primary-40);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ─── Section Divider ────────────────────────── */
+.hl-section-gap {
+  height: 4px;
+}
+
+/* ─── Responsive tweaks ──────────────────────── */
+@media (max-width: 360px) {
+  .hl-summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .hl-cal-cell {
+    border-radius: 7px;
+  }
+}

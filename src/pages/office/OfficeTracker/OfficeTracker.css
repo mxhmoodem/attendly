@@ -636,7 +636,26 @@
 }
 
 .ot-excl-type-badge--excluded { background: #fee2e2; color: #b91c1c; }
-.ot-excl-type-badge--holiday  { background: #fef3c7; color: #92400e; }
+.ot-excl-type-badge--holiday  { background: #d1fae5; color: #065f46; }
+
+.ot-excl-item--readonly {
+  opacity: 0.88;
+}
+
+.ot-excl-readonly-tag {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--ot-text-muted);
+}
+
+.ot-excl-days-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ot-text-muted);
+  background: var(--ot-border);
+  padding: 1px 6px;
+  border-radius: 100px;
+}
 
 .ot-excl-date {
   font-size: 0.875rem;
