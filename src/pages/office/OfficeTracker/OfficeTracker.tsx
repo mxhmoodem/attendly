@@ -271,7 +271,7 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
         <span className="ot-legend-item"><span className="ot-legend-swatch ot-legend-swatch--office" /> Office</span>
         <span className="ot-legend-item"><span className="ot-legend-swatch ot-legend-swatch--home" /> Home</span>
         <span className="ot-legend-item"><span className="ot-legend-swatch ot-legend-swatch--excluded" /> Excluded</span>
-        <span className="ot-legend-item"><span className="ot-legend-swatch ot-legend-swatch--holiday" /> Bank Holiday</span>
+        <span className="ot-legend-item"><span className="ot-legend-swatch ot-legend-swatch--holiday" />Holiday</span>
       </div>
       <p className="ot-cal-hint">Tap to toggle office · Hold to exclude</p>
     </div>

@@ -18,7 +18,7 @@ export const Header = () => {
   return (
     <header className="app-header">
       <div className="header-content">
-        <h1 className="app-title">Attendly</h1>
+        <h1 className="app-title">attendly</h1>
         <div className="header-actions">
           <button onClick={handleLogout} className="logout-button">
             Logout
