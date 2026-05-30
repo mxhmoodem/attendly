@@ -8,6 +8,9 @@ import {
   parseDate,
   getDaysInRange,
   isWeekend,
+  blockKey,
+  formatBlockLabel,
+  getCurrentBlockRange,
 } from '../../office/OfficeTracker/utils/dateUtils';
 import { isBankHoliday } from '../../office/OfficeTracker/utils/bankHolidays';
 import type { ExclusionType } from '../../office/OfficeTracker/types';
@@ -58,8 +61,9 @@ export const Home: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
 
-  const now      = useMemo(() => new Date(), []);
-  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const now        = useMemo(() => new Date(), []);
+  const blockRange = useMemo(() => getCurrentBlockRange(), []);
+  const docKey     = useMemo(() => blockKey(blockRange.start), [blockRange]);
 
   // ── Office tracker state ──────────────────
   const [reqValue,            setReqValue]            = useState(60);
@@ -83,7 +87,7 @@ export const Home: React.FC = () => {
     const load = async () => {
       try {
         const [officeData, leaveData] = await Promise.all([
-          getDocument<OfficeTrackerData>('officeTracker', `${user.uid}_${monthKey}`),
+          getDocument<OfficeTrackerData>('officeTracker', `${user.uid}_${docKey}`),
           getDocument<LeaveData>('holidayLeave', user.uid),
         ]);
         if (cancelled) return;
@@ -120,13 +124,11 @@ export const Home: React.FC = () => {
 
     load();
     return () => { cancelled = true; };
-  }, [user, monthKey]);
+  }, [user, docKey]);
 
-  // ── Office compliance for current month ───
+  // ── Office compliance for current block ───
   const officeCalc = useMemo(() => {
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const allDays = getDaysInRange(new Date(y, m, 1), new Date(y, m + 1, 0));
+    const allDays = getDaysInRange(blockRange.start, blockRange.end);
     const workingDaySet = new Set<string>();
 
     for (const day of allDays) {
@@ -152,7 +154,7 @@ export const Home: React.FC = () => {
       : 'not-meeting';
 
     return { workingDays, requiredOfficeDays, selectedOfficeDays, progressPercentage, status };
-  }, [now, reqValue, officeDays, excludedDays, excludeWeekends, excludeBankHolidays, holidayLeaveDays]);
+  }, [blockRange, reqValue, officeDays, excludedDays, excludeWeekends, excludeBankHolidays, holidayLeaveDays]);
 
   // ── Leave derived ─────────────────────────
   const usedDays = useMemo(
@@ -172,7 +174,7 @@ export const Home: React.FC = () => {
   const displayName = user?.displayName || user?.email?.split('@')[0] || 'there';
   const initials    = (user?.displayName || user?.email || 'X').split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const monthLabel = now.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  const blockLabel = formatBlockLabel(blockRange.start, blockRange.end);
   const dateLabel  = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
   const statusConfig = {
@@ -214,7 +216,7 @@ export const Home: React.FC = () => {
               <div className="home-stat-icon home-stat-icon--office"><MdLocationCity size={24} /></div>
               <div className="home-stat-title-group">
                 <span className="home-stat-section">Office Tracker</span>
-                <span className="home-stat-month">{monthLabel}</span>
+                <span className="home-stat-month">{blockLabel}</span>
               </div>
               <MdArrowForward className="home-stat-arrow" />
             </div>

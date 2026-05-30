@@ -8,7 +8,7 @@ Attendly uses Firebase Firestore as its database. There are three active collect
 |---|---|---|
 | `users` | `{uid}` | User profiles & settings |
 | `holidayLeave` | `{uid}` | Per-user leave allowance and leave entries |
-| `officeTracker` | `{uid}_{YYYY-MM}` | Per-user, per-month office-day tracking |
+| `officeTracker` | `{uid}_{YYYY-MM-DD}` | Per-user, per-4-week-block office-day tracking (key = block start date) |
 
 ---
 
@@ -61,13 +61,15 @@ calculating how many days an entry consumes.
 
 ### 3. `officeTracker` — Office-day tracker
 
-One document per user per calendar month. Stores which days the user marked as
-office days, plus the compliance requirement percentage.
+One document per user per 4-week attendance block. Blocks are 28 days long,
+anchored to Monday 25 May 2026 (block 0: 25 May – 21 Jun 2026, block 1:
+22 Jun – 19 Jul 2026, …). Stores which days the user marked as office days,
+plus the compliance requirement percentage.
 
 ```typescript
 {
   userId: string;                  // Firebase Auth UID
-  month: string;                   // YYYY-MM (e.g. "2026-02")
+  blockStart: string;              // YYYY-MM-DD, the block's start Monday (e.g. "2026-05-25")
   reqValue: number;                // Required office percentage (0–100)
   excludeWeekends: boolean;        // Whether weekends are excluded from calculation
   excludeBankHolidays: boolean;    // Whether UK bank holidays are excluded
@@ -142,8 +144,8 @@ await setDocument('holidayLeave', uid, {
 ```typescript
 import { getDocument } from '@/services/database';
 
-const monthKey = '2026-02';
-const data = await getDocument('officeTracker', `${uid}_${monthKey}`);
+const blockKey = '2026-05-25'; // start date of the 4-week block
+const data = await getDocument('officeTracker', `${uid}_${blockKey}`);
 ```
 
 ### Write office-tracker data
@@ -151,9 +153,9 @@ const data = await getDocument('officeTracker', `${uid}_${monthKey}`);
 ```typescript
 import { setDocument } from '@/services/database';
 
-await setDocument('officeTracker', `${uid}_${monthKey}`, {
+await setDocument('officeTracker', `${uid}_${blockKey}`, {
   userId: uid,
-  month: monthKey,
+  blockStart: blockKey,
   reqValue,
   excludeWeekends,
   excludeBankHolidays,
@@ -194,7 +196,7 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
-    // Office tracker — document IDs are "{uid}_{YYYY-MM}"
+    // Office tracker — document IDs are "{uid}_{YYYY-MM-DD}" (block start date)
     match /officeTracker/{docId} {
       allow read, write: if isAuthenticated() &&
         request.auth.uid == resource.data.userId;
@@ -215,7 +217,7 @@ query-based features in future:
 
 | Collection | Fields | Direction |
 |---|---|---|
-| `officeTracker` | `userId` ASC, `month` DESC | For listing a user's month history |
+| `officeTracker` | `userId` ASC, `blockStart` DESC | For listing a user's block history |
 | `holidayLeave` | *(no composite index needed — single-document per user)* | — |
 
 ---

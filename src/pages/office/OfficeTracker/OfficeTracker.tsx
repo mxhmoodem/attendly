@@ -16,11 +16,13 @@ import type { ComplianceStatus, ExcludedDaysMap, ExclusionType } from './types';
 import { getBankHolidayName, isBankHoliday } from './utils/bankHolidays';
 import {
   DAY_HEADERS,
-  addMonths,
+  blockKey,
+  formatBlockLabel,
   formatDate,
-  formatMonthYear,
   formatShortDate,
-  getCalendarGrid,
+  getBlockGrid,
+  getBlockIndex,
+  getBlockRange,
   getDaysInRange,
   isWeekend,
   parseDate,
@@ -135,36 +137,36 @@ const RequirementCard: React.FC<RequirementCardProps> = ({
 // Office Calendar
 // ─────────────────────────────────────────────
 interface CalendarProps {
-  viewMonth: Date;
+  blockStart: Date;
+  blockEnd: Date;
   officeDays: Set<string>;
   excludedDays: ExcludedDaysMap;
   excludeWeekends: boolean;
   excludeBankHolidays: boolean;
   holidayLeaveDays: Set<string>;
-  onPrevMonth: () => void;
-  onNextMonth: () => void;
+  onPrevBlock: () => void;
+  onNextBlock: () => void;
   onDayTap: (dateStr: string) => void;
   onDayLongPress: (dateStr: string) => void;
 }
 
 const OfficeCalendar: React.FC<CalendarProps> = ({
-  viewMonth,
+  blockStart,
+  blockEnd,
   officeDays,
   excludedDays,
   excludeWeekends,
   excludeBankHolidays,
   holidayLeaveDays,
-  onPrevMonth,
-  onNextMonth,
+  onPrevBlock,
+  onNextBlock,
   onDayTap,
   onDayLongPress,
 }) => {
-  const cells = getCalendarGrid(viewMonth.getFullYear(), viewMonth.getMonth());
+  const cells = getBlockGrid(blockStart);
   const today = todayStr();
-  const y = viewMonth.getFullYear();
-  const m = viewMonth.getMonth();
-  const rangeStartStr = formatDate(new Date(y, m, 1));
-  const rangeEndStr = formatDate(new Date(y, m + 1, 0));
+  const rangeStartStr = formatDate(blockStart);
+  const rangeEndStr = formatDate(blockEnd);
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressFired = useRef(false);
@@ -223,12 +225,12 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
   return (
     <div className="ot-card ot-cal-card">
       <div className="ot-cal-header">
-        <span className="ot-cal-month-title">{formatMonthYear(viewMonth)}</span>
+        <span className="ot-cal-month-title">{formatBlockLabel(blockStart, blockEnd)}</span>
         <div className="ot-cal-nav">
-          <button className="ot-cal-nav-btn" onClick={onPrevMonth} aria-label="Previous month">
+          <button className="ot-cal-nav-btn" onClick={onPrevBlock} aria-label="Previous block">
             <MdChevronLeft />
           </button>
-          <button className="ot-cal-nav-btn" onClick={onNextMonth} aria-label="Next month">
+          <button className="ot-cal-nav-btn" onClick={onNextBlock} aria-label="Next block">
             <MdChevronRight />
           </button>
         </div>
@@ -238,9 +240,7 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
         {DAY_HEADERS.map((h) => (
           <div key={h} className="ot-cal-dow">{h}</div>
         ))}
-        {cells.map((dateStr, idx) => {
-          if (!dateStr) return <div key={`empty-${idx}`} className="ot-cal-cell ot-cal-cell--empty" />;
-
+        {cells.map((dateStr) => {
           const status = getDayStatus(dateStr);
           const day = parseDate(dateStr).getDate();
           const isToday = dateStr === today;
@@ -545,10 +545,9 @@ const OfficeTracker: React.FC = () => {
   const [reqValue, setReqValue] = useState(60);
 
   // ── Calendar view (drives the date range) ────
-  const [viewMonth, setViewMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  // Identified by the zero-based index of the 4-week attendance block.
+  const [viewBlockIndex, setViewBlockIndex] = useState(() => getBlockIndex(new Date()));
+  const blockRange = useMemo(() => getBlockRange(viewBlockIndex), [viewBlockIndex]);
 
   // ── Day selections ───────────────────────────
   const [officeDays, setOfficeDays] = useState<Set<string>>(new Set());
@@ -567,9 +566,10 @@ const OfficeTracker: React.FC = () => {
   const [holidayLeaveEntries, setHolidayLeaveEntries] = useState<Array<{ fromDate: string; toDate: string; days: number }>>([]);
   // ── Auth & persistence ───────────────────────
   const { user } = useAuth();
-  const monthKey = `${viewMonth.getFullYear()}-${String(viewMonth.getMonth() + 1).padStart(2, '0')}`;
+  // Storage key = start date of the block (YYYY-MM-DD), e.g. "2026-05-25".
+  const docKey = blockKey(blockRange.start);
 
-  // ── Load from Firestore when month changes ────
+  // ── Load from Firestore when block changes ────
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -579,7 +579,7 @@ const OfficeTracker: React.FC = () => {
       excludeBankHolidays?: boolean;
       officeDays?: string[];
       excludedDays?: Record<string, string>;
-    }>('officeTracker', `${user.uid}_${monthKey}`)
+    }>('officeTracker', `${user.uid}_${docKey}`)
       .then((data) => {
         if (cancelled) return;
         if (data) {
@@ -589,14 +589,14 @@ const OfficeTracker: React.FC = () => {
           setOfficeDays(new Set(data.officeDays ?? []));
           setExcludedDays(new Map(Object.entries(data.excludedDays ?? {}) as [string, ExclusionType][]));
         } else {
-          // New month – clear day selections, keep settings
+          // New block – clear day selections, keep settings
           setOfficeDays(new Set());
           setExcludedDays(new Map());
         }
       })
       .catch(console.error);
     return () => { cancelled = true; };
-  }, [user, monthKey]);
+  }, [user, docKey]);
 
   // ── Load holiday leave overlay ──────────────
   useEffect(() => {
@@ -628,12 +628,8 @@ const OfficeTracker: React.FC = () => {
       .catch(console.error);
   }, [user]);
 
-  // ── Date range = full month of viewMonth ─────
-  const dateRange = useMemo(() => {
-    const y = viewMonth.getFullYear();
-    const m = viewMonth.getMonth();
-    return { start: new Date(y, m, 1), end: new Date(y, m + 1, 0) };
-  }, [viewMonth]);
+  // ── Date range = the 4-week block ────────────
+  const dateRange = blockRange;
 
   // ── Core calculation ─────────────────────────
   const calc = useMemo(() => {
@@ -747,9 +743,9 @@ const OfficeTracker: React.FC = () => {
   const handleSave = () => {
     if (!user) return;
     setSaving(true);
-    setDocument('officeTracker', `${user.uid}_${monthKey}`, {
+    setDocument('officeTracker', `${user.uid}_${docKey}`, {
       userId: user.uid,
-      month: monthKey,
+      blockStart: docKey,
       reqValue,
       excludeWeekends,
       excludeBankHolidays,
@@ -770,7 +766,7 @@ const OfficeTracker: React.FC = () => {
       <div className="ot-sticky-header">
         <div className="ot-header-left">
           <h1 className="ot-title">Days in Office</h1>
-          <p className="ot-header-month">{formatMonthYear(viewMonth)}</p>
+          <p className="ot-header-month">{formatBlockLabel(blockRange.start, blockRange.end)}</p>
           <StatusBadge status={calc.complianceStatus} />
         </div>
         <ProgressRing
@@ -791,14 +787,15 @@ const OfficeTracker: React.FC = () => {
         />
 
         <OfficeCalendar
-          viewMonth={viewMonth}
+          blockStart={blockRange.start}
+          blockEnd={blockRange.end}
           officeDays={officeDays}
           excludedDays={excludedDays}
           excludeWeekends={excludeWeekends}
           excludeBankHolidays={excludeBankHolidays}
           holidayLeaveDays={holidayLeaveDays}
-          onPrevMonth={() => setViewMonth((m) => addMonths(m, -1))}
-          onNextMonth={() => setViewMonth((m) => addMonths(m, 1))}
+          onPrevBlock={() => setViewBlockIndex((i) => i - 1)}
+          onNextBlock={() => setViewBlockIndex((i) => i + 1)}
           onDayTap={handleDayTap}
           onDayLongPress={handleDayLongPress}
         />
