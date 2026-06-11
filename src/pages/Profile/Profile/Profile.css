@@ -311,3 +311,93 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* ── Desktop-only page header ───────────────────────── */
+.profile-desktop-header {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────
+   Desktop layout (≥900px) — 3-column cards
+   ───────────────────────────────────────────── */
+@media (min-width: 900px) {
+  .profile-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 0.85fr 1fr 1fr;
+    column-gap: 1.5rem;
+    row-gap: 1.5rem;
+    align-items: start;
+  }
+
+  .profile-desktop-header {
+    display: block;
+    grid-column: 1 / -1;
+    margin-bottom: 0.25rem;
+  }
+
+  .profile-desktop-title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .profile-desktop-sub {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 4px 0 0;
+  }
+
+  /* Avatar becomes the left "profile" card */
+  .profile-avatar-section {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2.25rem 1.5rem;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Account + Work cards fill the remaining columns */
+  .profile-card:nth-of-type(1) {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .profile-card:nth-of-type(2) {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .profile-card {
+    padding: 1.5rem 1.75rem 1rem;
+    height: 100%;
+  }
+
+  /* Save button — spans full width below the cards */
+  .profile-save-btn {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 0.5rem;
+  }
+
+  /* Logout + delete — full width below */
+  .profile-secondary-actions {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 0;
+  }
+
+  .profile-loading {
+    grid-column: 1 / -1;
+  }
+}

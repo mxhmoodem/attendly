@@ -58,3 +58,10 @@
   background: #9ca3af;
   cursor: not-allowed;
 }
+
+/* ── Desktop: header is replaced by the sidebar brand + logout ── */
+@media (min-width: 900px) {
+  .app-header {
+    display: none;
+  }
+}

@@ -113,7 +113,7 @@ const RequirementCard: React.FC<RequirementCardProps> = ({
   requiredOfficeDays,
   onValueChange,
 }) => (
-  <div className="ot-card">
+  <div className="ot-card ot-req-card">
     <p className="ot-card-label">Office Requirement</p>
     <div className="ot-req-row">
       <span className="ot-req-muted">Required percentage</span>
@@ -451,7 +451,7 @@ const BreakdownCard: React.FC<BreakdownCardProps> = ({
   requiredOfficeDays,
   selectedOfficeDays,
 }) => (
-  <div className="ot-card">
+  <div className="ot-card ot-breakdown-card">
     <div className="ot-breakdown-header">
       <MdInfoOutline className="ot-breakdown-icon" />
       <span className="ot-card-label" style={{ marginBottom: 0 }}>Calculation Breakdown</span>
@@ -519,8 +519,8 @@ interface BottomBarProps {
   saving?: boolean;
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({ onMarkToday, isTodayMarked, isTodayInView, onSave, saved, saving }) => (
-  <div className="ot-bottom-bar">
+const ActionButtons: React.FC<BottomBarProps> = ({ onMarkToday, isTodayMarked, isTodayInView, onSave, saved, saving }) => (
+  <>
     <button
       className={`ot-btn-secondary${isTodayMarked ? ' ot-btn-secondary--marked' : ''}`}
       onClick={onMarkToday}
@@ -534,6 +534,12 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMarkToday, isTodayMarked, isTod
       {saved ? <MdCheck size={17} /> : <MdSave size={17} />}
       {saved ? 'Saved!' : saving ? 'Saving…' : 'Save Changes'}
     </button>
+  </>
+);
+
+const BottomBar: React.FC<BottomBarProps> = (props) => (
+  <div className="ot-bottom-bar">
+    <ActionButtons {...props} />
   </div>
 );
 
@@ -762,6 +768,24 @@ const OfficeTracker: React.FC = () => {
 
   return (
     <div className="ot-page">
+      {/* ── Desktop-only page header (title + actions) ── */}
+      <div className="ot-desktop-header">
+        <div>
+          <h1 className="ot-desktop-title">Office Tracker</h1>
+          <p className="ot-desktop-sub">{formatBlockLabel(blockRange.start, blockRange.end)}</p>
+        </div>
+        <div className="ot-desktop-actions">
+          <ActionButtons
+            onMarkToday={handleMarkToday}
+            isTodayMarked={officeDays.has(today)}
+            isTodayInView={isTodayInView}
+            onSave={handleSave}
+            saved={saved}
+            saving={saving}
+          />
+        </div>
+      </div>
+
       {/* ── Sticky summary header ── */}
       <div className="ot-sticky-header">
         <div className="ot-header-left">

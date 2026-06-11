@@ -154,6 +154,12 @@ const Profile = () => {
 
   return (
     <div className="profile-page">
+      {/* Desktop-only page header */}
+      <div className="profile-desktop-header">
+        <h1 className="profile-desktop-title">Profile</h1>
+        <p className="profile-desktop-sub">Manage your account &amp; workplace</p>
+      </div>
+
       {/* Avatar Section */}
       <div className="profile-avatar-section">
         <div className="profile-avatar-wrapper" onClick={handleAvatarClick}>

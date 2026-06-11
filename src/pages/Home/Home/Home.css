@@ -346,12 +346,96 @@
 /* ── Desktop ─────────────────────────────── */
 @media (min-width: 900px) {
   .home-container {
-    padding: 2.5rem;
-    padding-bottom: 90px;
-    max-width: 900px;
+    width: 100%;
+    padding: 0;
+    max-width: none;
+    margin: 0;
+    min-height: calc(100vh - 7rem);
   }
 
+  .home-greeting {
+    margin-bottom: 2rem;
+  }
+
+  .home-greeting-title {
+    font-size: 2rem;
+  }
+
+  .home-greeting-date {
+    font-size: 0.95rem;
+  }
+
+  .home-avatar-img,
+  .home-avatar-initials {
+    width: 52px;
+    height: 52px;
+    font-size: 1.15rem;
+  }
+
+  /* Two-column layout: large Office card on the left,
+     Leave + Profile stacked on the right */
   .home-stats-grid {
-    grid-template-columns: repeat(3, 1fr);
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(360px, 1fr);
+    grid-template-rows: minmax(240px, 1fr) minmax(240px, 1fr);
+    gap: clamp(1.5rem, 2.5vw, 2rem);
+    align-items: stretch;
+    min-height: clamp(560px, calc(100vh - 13rem), 780px);
+  }
+
+  /* Office card spans both rows on the left */
+  .home-stat-card:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-stat-card:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .home-stat-card:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .home-stat-card {
+    padding: 1.75rem;
+    border-radius: 20px;
+    min-width: 0;
+  }
+
+  /* Give the tall Office card breathing room around its big number */
+  .home-stat-card:nth-child(1) .home-stat-body {
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2rem, 4vw, 4rem);
+    margin: 1.5rem 0;
+  }
+
+  .home-stat-card:nth-child(1) .home-big-number {
+    font-size: 3.25rem;
+  }
+
+  .home-stat-card:nth-child(2),
+  .home-stat-card:nth-child(3) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-stat-card:nth-child(2) .home-stat-body {
+    flex: 1;
+    align-items: center;
+  }
+
+  .home-stat-card:nth-child(1) .home-sub-stats {
+    gap: 2rem;
+  }
+
+  .home-stat-card:nth-child(1) .home-sub-stat {
+    align-items: flex-start;
   }
 }

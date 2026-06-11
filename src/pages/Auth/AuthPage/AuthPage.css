@@ -134,3 +134,44 @@
     padding: 2.5rem;
   }
 }
+
+@media (min-width: 1024px) {
+  .auth-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    align-content: center;
+    gap: 2rem;
+    background: white;
+    padding: 0;
+  }
+
+  .auth-page::before {
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: #1a1a1a;
+    background-image: 
+      linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .04) 25%, rgba(255, 255, 255, .04) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .04) 75%, rgba(255, 255, 255, .04) 76%, transparent 77%, transparent),
+      linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .04) 25%, rgba(255, 255, 255, .04) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .04) 75%, rgba(255, 255, 255, .04) 76%, transparent 77%, transparent);
+  }
+
+  .auth-header,
+  .auth-container {
+    grid-column: 1;
+    width: min(100% - 4rem, 480px);
+    justify-self: center;
+  }
+
+  .auth-header {
+    margin: 0;
+    color: #1a1a1a;
+  }
+
+  .auth-container {
+    flex: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+}

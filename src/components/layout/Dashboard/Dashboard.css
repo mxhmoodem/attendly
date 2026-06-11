@@ -13,3 +13,15 @@
   padding: 2rem 1rem;
   overflow: visible;
 }
+
+/* ── Desktop: make room for the fixed left sidebar ── */
+@media (min-width: 900px) {
+  .dashboard-main {
+    margin-left: 240px;
+    max-width: none;
+    width: calc(100% - 240px);
+    min-height: 100vh;
+    padding: clamp(2rem, 4vw, 3.5rem) clamp(2rem, 5vw, 4.5rem) 3.5rem;
+    box-sizing: border-box;
+  }
+}
