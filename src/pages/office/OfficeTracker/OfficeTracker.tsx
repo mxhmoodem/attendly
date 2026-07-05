@@ -279,6 +279,32 @@ const OfficeCalendar: React.FC<CalendarProps> = ({
 };
 
 // ─────────────────────────────────────────────
+// Group sorted dates into consecutive-day ranges
+// ─────────────────────────────────────────────
+const groupConsecutiveDays = (
+  dates: string[]
+): Array<{ from: string; to: string; count: number }> => {
+  const sorted = [...dates].sort();
+  const groups: Array<{ from: string; to: string; count: number }> = [];
+  for (const ds of sorted) {
+    const last = groups[groups.length - 1];
+    if (last) {
+      const prev = parseDate(last.to);
+      const nextDay = formatDate(
+        new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + 1)
+      );
+      if (nextDay === ds) {
+        last.to = ds;
+        last.count++;
+        continue;
+      }
+    }
+    groups.push({ from: ds, to: ds, count: 1 });
+  }
+  return groups;
+};
+
+// ─────────────────────────────────────────────
 // Exclusions Card
 // ─────────────────────────────────────────────
 interface ExclusionsCardProps {
@@ -290,8 +316,8 @@ interface ExclusionsCardProps {
   holidayLeaveEntries: Array<{ fromDate: string; toDate: string; days: number }>;
   onExcludeWeekendsChange: (v: boolean) => void;
   onExcludeBankHolidaysChange: (v: boolean) => void;
-  onAddExcludedDay: (dateStr: string) => void;
-  onRemoveExcludedDay: (dateStr: string) => void;
+  onAddExcludedRange: (fromStr: string, toStr: string) => void;
+  onRemoveExcludedRange: (fromStr: string, toStr: string) => void;
 }
 
 const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
@@ -303,16 +329,19 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
   holidayLeaveEntries,
   onExcludeWeekendsChange,
   onExcludeBankHolidaysChange,
-  onAddExcludedDay,
-  onRemoveExcludedDay,
+  onAddExcludedRange,
+  onRemoveExcludedRange,
 }) => {
-  const [newDate, setNewDate] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const canAdd = Boolean(fromDate && toDate && toDate >= fromDate);
 
   const handleAdd = () => {
-    if (newDate) {
-      onAddExcludedDay(newDate);
-      setNewDate('');
-    }
+    if (!canAdd) return;
+    onAddExcludedRange(fromDate, toDate);
+    setFromDate('');
+    setToDate('');
   };
 
   const count = excludedDays.size + holidayLeaveEntries.length;
@@ -358,17 +387,36 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
           {/* Add exclusion form */}
           <div className="ot-excl-section">
             <p className="ot-excl-section-title">Add Work Exclusion</p>
-            <div className="ot-add-excl-row">
-              <input
-                type="date"
-                className="ot-date-input ot-date-input--inline"
-                value={newDate}
-                onChange={(e) => setNewDate(e.target.value)}
-              />
-              <button className="ot-add-btn" onClick={handleAdd} disabled={!newDate} aria-label="Add exclusion">
+            <div className="ot-add-excl-range">
+              <div className="ot-add-excl-field">
+                <label className="ot-add-excl-label" htmlFor="ot-excl-from">From</label>
+                <input
+                  id="ot-excl-from"
+                  type="date"
+                  className="ot-date-input ot-date-input--inline"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    if (toDate && e.target.value > toDate) setToDate(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="ot-add-excl-field">
+                <label className="ot-add-excl-label" htmlFor="ot-excl-to">To</label>
+                <input
+                  id="ot-excl-to"
+                  type="date"
+                  className="ot-date-input ot-date-input--inline"
+                  value={toDate}
+                  min={fromDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </div>
+              <button className="ot-add-btn" onClick={handleAdd} disabled={!canAdd} aria-label="Add exclusion">
                 <MdAdd size={24} />
               </button>
             </div>
+            <p className="ot-add-excl-hint">Excludes every day in the range. Pick the same date twice for one day.</p>
           </div>
 
           {/* Manual work exclusions list */}
@@ -376,15 +424,24 @@ const ExclusionsCard: React.FC<ExclusionsCardProps> = ({
             <div className="ot-excl-section">
               <p className="ot-excl-section-title">Work Exclusions</p>
               <ul className="ot-excl-list">
-                {[...excludedDays.keys()].sort().map((d) => (
-                  <li key={d} className="ot-excl-item">
+                {groupConsecutiveDays([...excludedDays.keys()]).map((g) => (
+                  <li key={g.from} className="ot-excl-item">
                     <div className="ot-excl-item-left">
                       <span className="ot-excl-type-badge ot-excl-type-badge--excluded">
                         <MdBlock size={11} /> Excluded
                       </span>
-                      <span className="ot-excl-date">{formatShortDate(d)}</span>
+                      <span className="ot-excl-date">
+                        {g.from === g.to
+                          ? formatShortDate(g.from)
+                          : `${formatShortDate(g.from)} – ${formatShortDate(g.to)}`}
+                      </span>
+                      {g.count > 1 && <span className="ot-excl-days-badge">{g.count}d</span>}
                     </div>
-                    <button className="ot-excl-remove" onClick={() => onRemoveExcludedDay(d)} aria-label="Remove">
+                    <button
+                      className="ot-excl-remove"
+                      onClick={() => onRemoveExcludedRange(g.from, g.to)}
+                      aria-label="Remove"
+                    >
                       <MdClose size={16} />
                     </button>
                   </li>
@@ -723,13 +780,30 @@ const OfficeTracker: React.FC = () => {
   );
 
   // ── Exclusion helpers ────────────────────────
-  const addExcludedDay = (dateStr: string) => {
-    setExcludedDays((prev) => new Map(prev).set(dateStr, 'excluded'));
-    setOfficeDays((prev) => { const n = new Set(prev); n.delete(dateStr); return n; });
+  const addExcludedRange = (fromStr: string, toStr: string) => {
+    const start = parseDate(fromStr);
+    const end = parseDate(toStr);
+    if (start > end) return;
+    const dateStrs = getDaysInRange(start, end).map(formatDate);
+    setExcludedDays((prev) => {
+      const n = new Map(prev);
+      for (const ds of dateStrs) n.set(ds, 'excluded');
+      return n;
+    });
+    setOfficeDays((prev) => {
+      const n = new Set(prev);
+      for (const ds of dateStrs) n.delete(ds);
+      return n;
+    });
   };
 
-  const removeExcludedDay = (dateStr: string) => {
-    setExcludedDays((prev) => { const n = new Map(prev); n.delete(dateStr); return n; });
+  const removeExcludedRange = (fromStr: string, toStr: string) => {
+    const dateStrs = getDaysInRange(parseDate(fromStr), parseDate(toStr)).map(formatDate);
+    setExcludedDays((prev) => {
+      const n = new Map(prev);
+      for (const ds of dateStrs) n.delete(ds);
+      return n;
+    });
   };
 
   // ── Mark today ───────────────────────────────
@@ -833,8 +907,8 @@ const OfficeTracker: React.FC = () => {
           holidayLeaveEntries={holidayLeaveEntries}
           onExcludeWeekendsChange={setExcludeWeekends}
           onExcludeBankHolidaysChange={setExcludeBankHolidays}
-          onAddExcludedDay={addExcludedDay}
-          onRemoveExcludedDay={removeExcludedDay}
+          onAddExcludedRange={addExcludedRange}
+          onRemoveExcludedRange={removeExcludedRange}
         />
 
         <BreakdownCard

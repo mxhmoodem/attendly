@@ -564,6 +564,35 @@
   align-items: center;
 }
 
+/* Add exclusion range (From / To + button) */
+.ot-add-excl-range {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.ot-add-excl-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ot-add-excl-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ot-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ot-add-excl-hint {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  color: var(--ot-text-muted);
+}
+
 .ot-date-input {
   flex: 1;
   padding: 9px 10px;
